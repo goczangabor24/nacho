@@ -18,8 +18,6 @@ import (
 	"github.com/gaborgoczan/nacho/internal/templates"
 )
 
-// tmpl is parsed once at startup. A broken template fails the process
-// immediately instead of serving a half-broken page later.
 var tmpl = template.Must(template.ParseFS(templates.FS, "layout.html", "login.html"))
 
 func main() {
@@ -34,7 +32,6 @@ func run() error {
 		return err
 	}
 
-	// Cancelled on Ctrl+C or SIGTERM, e.g. when a host stops the container.
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
@@ -91,8 +88,6 @@ func run() error {
 	return srv.Shutdown(shutdownCtx)
 }
 
-// render executes a template into a buffer first, so a template error
-// becomes a 500 instead of a half-written page.
 func render(w http.ResponseWriter, name string, data any) {
 	var buf bytes.Buffer
 	if err := tmpl.ExecuteTemplate(&buf, name, data); err != nil {
