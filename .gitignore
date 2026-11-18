@@ -1,0 +1,16 @@
+# secrets / local config
+.env
+.env.*
+!.env.example
+
+# build output
+/bin/
+/app
+*.test
+*.out
+*.log
+
+# macOS / editors
+.DS_Store
+.idea/
+.vscode/

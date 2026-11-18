@@ -1,0 +1,27 @@
+# Local development database only.
+# Credentials here are deliberately trivial and must never be reused anywhere else.
+name: nacho
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: nacho
+      POSTGRES_PASSWORD: nacho
+      POSTGRES_DB: nacho
+    ports:
+      # 5433 on the host because Homebrew Postgres already owns 5432 on this Mac.
+      # Inside the compose network the database still listens on 5432, so the
+      # app will connect to "db:5432" and never needs this mapping.
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nacho -d nacho"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata:

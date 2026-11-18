@@ -1,0 +1,25 @@
+{{define "content"}}
+<div class="card-head">
+  <p class="eyebrow">Family account</p>
+  <h1>Welcome back</h1>
+  <p class="lede">Sign in to see what is in stock.</p>
+</div>
+
+{{if .Error}}
+<p class="error" role="alert">{{.Error}}</p>
+{{end}}
+
+<form method="post" action="/login">
+  <div class="field">
+    <label for="username">Username</label>
+    <input id="username" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" required>
+  </div>
+
+  <div class="field">
+    <label for="password">Password</label>
+    <input id="password" name="password" type="password" autocomplete="current-password" required>
+  </div>
+
+  <button type="submit">Sign in</button>
+</form>
+{{end}}
