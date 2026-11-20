@@ -17,9 +17,6 @@ var (
 	ErrInvalidHash        = errors.New("auth: malformed password hash")
 )
 
-// hashParams is fixed rather than argon2id.DefaultParams: the default's
-// Parallelism is runtime.NumCPU(), which changes the hash output per machine,
-// and the package documents its defaults as suitable for development only.
 var hashParams = &argon2id.Params{
 	Memory:      19456, // KiB (19 MiB)
 	Iterations:  2,
@@ -51,12 +48,7 @@ func HashPassword(password string) (string, error) {
 	return hash, nil
 }
 
-// ComparePassword returns ErrInvalidCredentials when the password is wrong and
-// ErrInvalidHash when the stored hash itself is unusable. The caller must not
-// turn the second case into a 401.
 func ComparePassword(hash, password string) error {
-	// Decode before deriving so a corrupted row cannot ask Argon2 to allocate
-	// an absurd amount of memory.
 	params, _, _, err := argon2id.DecodeHash(hash)
 	if err != nil {
 		return fmt.Errorf("%w: %w", ErrInvalidHash, err)
@@ -82,7 +74,7 @@ func ComparePassword(hash, password string) error {
 	return nil
 }
 
-var dummyHash = mustHash("a-password-that-is-never-valid-like-this-one-here")
+var DummyHash = mustHash("a-password-that-is-never-valid-like-this-one-here")
 
 func mustHash(password string) string {
 	hash, err := HashPassword(password)
