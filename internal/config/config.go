@@ -30,7 +30,11 @@ func Load() (Config, error) {
 		return Config{}, err
 	}
 	if idleTTL >= sessionTTL {
-		return Config{}, errors.New("Idle timeout limit can't be higher than Session timeout limit")
+		return Config{}, fmt.Errorf(
+			"config: SESSION_IDLE_TTL (%s) must be shorter than SESSION_TTL (%s)",
+			idleTTL,
+			sessionTTL,
+		)
 	}
 	cookieSecure, err := envBool("COOKIE_SECURE", false)
 	if err != nil {
