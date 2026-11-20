@@ -33,3 +33,31 @@ func ValidatePassword(password string) error {
 		return fmt.Errorf("auth: password must be at most %d characters", passwordMaxLen)
 	}
 }
+
+func HashPassword(password string) (string, error) {
+	if err := ValidatePassword(password); != nil {
+		return "", err
+	}
+	hash, err := argon2id.CreateHash(password, hashParams)
+	if err != nil {
+		return "", fmt.Errorf("auth: error hashing password: %w", err)
+	}
+	return hash, nil
+}
+
+func ComparePassword(hash, password string) error {
+	match, err := argon2id.ComparePasswordAndHash(password, hash)
+	if err != nil {
+		return fmt.Errorf("%w: %w", ErrInvalidHash, err)
+	}
+}
+
+var dummyHash = mustHash("a-password-that-is-never-valid-like-this-one-here")
+
+func mustHash(password string) string {
+	hash, err := HashPassword(password)
+	if err != nil {
+		panic("auth: cannot hash dummy password: " + err.Error())
+	}
+	return hash
+}
