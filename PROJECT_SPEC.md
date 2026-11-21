@@ -101,6 +101,8 @@ Keycloak may use its own PostgreSQL database (prefer separate database and crede
 
 ## 7. Authentication and shared-tablet behavior
 
+> **Current implementation (2026-11-21):** identity is an argon2id password (19 MiB, t=2, p=1) plus a server-side session cookie, not Keycloak. This is deliberate and temporary so authorization can be settled before the inventory domain. Session tokens are 32 random bytes; only their SHA-256 hash is stored. Expiry slides on activity at 30 minutes idle with a 12 hour absolute cap, both configurable. The rules below still apply in spirit: never trust a client-supplied user ID, derive it from the verified session, and keep authorization in Go. Keycloak/OIDC remains the target architecture; `internal/auth` is the seam where it will plug in.
+
 - Use OpenID Connect Authorization Code Flow with PKCE for a browser-based frontend.
 - The frontend authenticates with Keycloak; API calls carry access tokens where appropriate.
 - The Go API validates access tokens: cryptographic signature against trusted JWKS, issuer, expiration, audience, and any relevant authorized-party/role claims.
@@ -114,6 +116,8 @@ Keycloak may use its own PostgreSQL database (prefer separate database and crede
 - Keycloak handles authentication; Go is the final authority for application permissions.
 
 ## 8. Proposed data model — illustrative, not final
+
+> **Implemented so far (2026-11-21):** `users` and `sessions` only (`sql/schema`). The inventory entities below remain proposals pending the stock-keeping decisions in §3.
 
 Possible entities:
 
@@ -147,7 +151,7 @@ GET    /api/inventory-entries/export [admin/manager]
 - Use request-scoped contexts and database timeouts.
 - Keep handlers thin; put domain rules in services when complexity justifies it.
 - Use parameterized SQL and migrations. `database/sql` with `github.com/jackc/pgx/v5/stdlib` is a suitable starting point; `sql.DB` already pools connections.
-- If the existing code uses sqlc, preserve it rather than adding a competing query abstraction.
+- If the existing code uses sqlc, preserve it rather than adding a competing query abstraction. This project has adopted sqlc: schema changes go through goose in `sql/schema`, every query lives in `sql/queries`, and generated code lives in `internal/db` (committed). Run `sqlc generate` after changing either directory.
 - Add pagination/filtering for history once necessary.
 - Protect state-changing requests against replay/duplicate taps where appropriate.
 

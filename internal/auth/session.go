@@ -72,14 +72,14 @@ func (s *SessionStore) Lookup(ctx context.Context, token string) (Session, error
 	}
 
 	newExpiry := s.expiryFrom(row.CreatedAt, now)
-	sess := Session{
+	session := Session{
 		UserID:      row.UserID,
 		DisplayName: row.DisplayName,
 		Role:        row.Role,
 		ExpiresAt:   newExpiry,
 	}
 
-	if newExpiry.Sub(row.ExpiresAt) >= time.Minute {
+	if newExpiry.Sub(row.ExpiresAt) >= 1*time.Minute {
 		err := s.q.TouchSession(ctx, db.TouchSessionParams{
 			ExpiresAt:  newExpiry,
 			LastSeenAt: now,
@@ -90,7 +90,7 @@ func (s *SessionStore) Lookup(ctx context.Context, token string) (Session, error
 		}
 	}
 
-	return sess, nil
+	return session, nil
 }
 
 func (s *SessionStore) Revoke(ctx context.Context, token string) error {
